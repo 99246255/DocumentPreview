@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+</head>
+
+<body>
+    <div class="box">
+        <div class="btnbox">
+            <div style="margin: 50px">
+                <input type="file" id="file" class="button-item">上传</input>
+                <button type="button" id="upload" class="button-item">上传</button>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="${ctx!}/js/jquery.min.js?v=2.1.4"></script>
+<script type="text/javascript">
+    $('#upload').click(function () {
+        var file = document.getElementById('file').files[0];
+        var formData = new FormData();
+        if (file != null) {
+            if(file.type != 'application/msword' && file.type != 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                && file.type != 'application/vnd.ms-excel' && file.type != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                && file.type != 'application/vnd.ms-powerpoint' && file.type != 'application/vnd.openxmlformats-officedocument.presentationml.presentation'){
+                alert("上传文件格式只支持word,excel,ppt");
+                return;
+            }
+            if(file.size > 5*1024*1024){
+                alert("文件大小超过5M");
+                return;
+            }
+            formData.append("file", file);
+        }else{
+            return;
+        }
+        $.ajax({
+            url : "${ctx!}/upload",
+            type : 'POST',
+            data: formData,
+            // 告诉jQuery不要去处理发送的数据
+            processData : false,
+            // 告诉jQuery不要去设置Content-Type请求头
+            contentType : false,
+            success : function(str) {
+                window.location.href= "${ctx!}/index?file=download/" + str;
+            },
+        });
+    });
+</script>
+</html>
