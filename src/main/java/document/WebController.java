@@ -1,15 +1,17 @@
 package document;
 
-import org.apache.commons.io.IOUtils;
 import org.jodconverter.office.OfficeException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 @Controller
 public class WebController {
@@ -44,12 +46,12 @@ public class WebController {
                         HttpServletResponse response) {
         try {
             File file = new File("/pmfile/" +fileName + ".pdf");
-            FileInputStream fileInputStream = new FileInputStream(file);
-            // 处理中文问题
-            response.setHeader("Content-Disposition", "attachment;filename*=UTF-8''" + URLEncoder.encode(fileName,"UTF-8"));
-            response.setContentType("multipart/form-data");
-            OutputStream outputStream = response.getOutputStream();
-            IOUtils.write(IOUtils.toByteArray(fileInputStream), outputStream);
+            FileChannel channel = new FileInputStream(file).getChannel();
+            ServletOutputStream out = response.getOutputStream();
+            WritableByteChannel channel_out = Channels.newChannel(out);
+            channel.transferTo(0,file.length(),channel_out);
+            out.flush();
+            out.close();
         } catch(Exception e) {
             e.printStackTrace();
         }
